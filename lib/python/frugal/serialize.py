@@ -17,7 +17,7 @@ from frugal.protocol import FProtocolFactory
 
 
 def serialize(
-        frugal_object, 
+        frugal_object,
         protocol_factory=TBinaryProtocol.TBinaryProtocolFactory()):
     """Serialize a frugal entity to bytes."""
     transport = TTransport.TMemoryBuffer()
