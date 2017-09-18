@@ -26,10 +26,10 @@ class TestSerialize(unittest.TestCase):
         Ensure serialization will work with
         non-ASCII unicode strings.
         """
-        bonk = Bonk(u"hello\u2014world", 2)
+        bonk = Bonk(u"hello–world", 2)
         result = serialize(bonk)
         debonk = deserialize(Bonk(), result)
-        self.assertEqual(debonk.hello, u"hello\u2014world")
+        self.assertEqual(debonk.hello, u"hello–world")
         self.assertEqual(debonk.type, 2)
 
     def test_alternative_protocol(self):
@@ -41,5 +41,5 @@ class TestSerialize(unittest.TestCase):
         result = serialize(bonk, pf)
         self.assertContains(result, "hello")
         debonk = deserialize(Bonk(), result, pf)
-        self.assertEqual(debonk.hello, u"hello\u2014world")
+        self.assertEqual(debonk.hello, u"hello–world")
         self.assertEqual(debonk.type, 2)
