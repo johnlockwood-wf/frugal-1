@@ -36,7 +36,7 @@ class TestSerialize(unittest.TestCase):
         """
         Ensure serialize will use a given thrift protocol factory.
         """
-        bonk = Bonk(u"hello\u2014world", 2)
+        bonk = Bonk(u"hello–world", 2)
         pf = TJSONProtocol.TJSONProtocolFactory()
         result = serialize(bonk, pf)
         self.assertContains(result, "hello")
