@@ -16,7 +16,9 @@ from thrift.transport import TTransport
 from frugal.protocol import FProtocolFactory
 
 
-def serialize(frugal_object, protocol_factory=TBinaryProtocol.TBinaryProtocolFactory()):
+def serialize(
+        frugal_object, 
+        protocol_factory=TBinaryProtocol.TBinaryProtocolFactory()):
     """Serialize a frugal entity to bytes."""
     transport = TTransport.TMemoryBuffer()
     fprotocolFactory = FProtocolFactory(protocol_factory)
@@ -25,9 +27,11 @@ def serialize(frugal_object, protocol_factory=TBinaryProtocol.TBinaryProtocolFac
     return transport.getvalue()
 
 
-def deserialize(base,
-                buf,
-                protocol_factory=TBinaryProtocol.TBinaryProtocolFactory()):
+def deserialize(
+        base,
+        buf,
+        protocol_factory=TBinaryProtocol.TBinaryProtocolFactory()):
+    """Deserialize a frugal object into a base instance of a frugal object."""
     transport = TTransport.TMemoryBuffer(buf)
     fprotocolFactory = FProtocolFactory(protocol_factory)
     protocol = fprotocolFactory.get_protocol(transport)
