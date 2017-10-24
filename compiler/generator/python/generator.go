@@ -237,7 +237,7 @@ func (g *Generator) GenerateEnum(enum *parser.Enum) error {
 	comment := append([]string{}, enum.Comment...)
 	for _, value := range enum.Values {
 		if value.Comment != nil {
-			comment = append(append(comment, value.Name + ": " + value.Comment[0]), value.Comment[1:]...)
+			comment = append(append(comment, value.Name+": "+value.Comment[0]), value.Comment[1:]...)
 		}
 	}
 	if len(comment) != 0 {
@@ -1270,7 +1270,7 @@ func (g *Generator) generateProcessorFunction(method *parser.Method) string {
 		contents += tabtabtab + "with self._lock:\n"
 		contents += tabtabtabtab + fmt.Sprintf("_write_application_exception(ctx, oprot, \"%s\", ex_code=TApplicationExceptionType.INTERNAL_ERROR, message=e.message)\n", methodLower)
 	}
-	contents += tabtabtab + "raise\n"
+	contents += tabtabtab + "raise e\n"
 	if !method.Oneway {
 		contents += tabtab + "with self._lock:\n"
 		contents += tabtabtab + "try:\n"
