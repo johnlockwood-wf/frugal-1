@@ -58,7 +58,7 @@ def check_for_failure(actual, expected):
         except Exception:
             failed = True
     elif isinstance(expected, TTransportException):
-        if actual.type != expected.type:
+        if hasattr(actual, "type") and hasattr(expected, "type") and actual.type != expected.type:
             failed = True
     elif isinstance(expected, Numberz):
         if type(actual) != type(expected):
