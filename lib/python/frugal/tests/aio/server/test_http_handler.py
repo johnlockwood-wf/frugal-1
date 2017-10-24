@@ -12,7 +12,7 @@
 import base64
 import mock
 
-from aiohttp import test_utils, CIMultiDict
+from aiohttp import test_utils
 from aiohttp.streams import StreamReader
 from thrift.protocol import TBinaryProtocol
 
@@ -71,9 +71,9 @@ class TestFHttpHandler(utils.AsyncIOTestCase):
         request_payload_reader.feed_data(request_payload)
         request_payload_reader.feed_eof()
 
-        headers = CIMultiDict({
+        headers = {
             'x-frugal-payload-limit': '5',
-        })
+        }
         request = test_utils.make_mocked_request('POST', '/frugal',
                                                  payload=request_payload_reader,
                                                  headers=headers)
