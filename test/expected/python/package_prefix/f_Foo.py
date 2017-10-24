@@ -132,7 +132,7 @@ class _get_thing(FProcessorFunction):
         except Exception as e:
             with self._lock:
                 _write_application_exception(ctx, oprot, "get_thing", ex_code=TApplicationExceptionType.INTERNAL_ERROR, message=e.message)
-            raise
+            raise e
         with self._lock:
             try:
                 oprot.write_response_headers(ctx)
