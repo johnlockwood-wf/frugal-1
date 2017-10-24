@@ -28,7 +28,7 @@ setup(
     ],
     extras_require={
         'tornado': ["nats-client==0.5.0"],
-        'asyncio': ["async-timeout==1.1.0", "asyncio-nats-client==0.3.1",
+        'asyncio': ["async-timeout==1.1.0", "asyncio-nats-client==0.6.0",
                     "aiohttp==2.3.1"],
         'gae': ["webapp2==2.5.2"],
     }
