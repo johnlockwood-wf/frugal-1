@@ -21,8 +21,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"os/exec"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 // a testCase is a pointer to a valid test pair (client/server) and port to run
@@ -42,9 +43,7 @@ type failures struct {
 	mu     sync.Mutex
 }
 
-
-
-func Run(testDefinitions, outDir *string, getCommand func (config Config, port int) (cmd *exec.Cmd, formatted string)) error {
+func Run(testDefinitions, outDir *string, getCommand func(config Config, port int) (cmd *exec.Cmd, formatted string)) error {
 	startTime := time.Now()
 
 	// TODO: Allow setting loglevel to debug with -V flag/-debug/similar
@@ -130,13 +129,21 @@ func Run(testDefinitions, outDir *string, getCommand func (config Config, port i
 	// TODO: This could run into issues if run outside of Skynet/Skynet-cli
 	port = 9000
 	// Add each configuration to the crossrunnerTasks channel
-	for _, pair := range pairs {
+	for _, pair := range pairs[:len(pairs)/2] {
 		tCase := testCase{pair, port}
 		// put the test case on the crossrunnerTasks channel
 		crossrunnerTasks <- &tCase
 		port++
 	}
 
+	wg.Wait()
+	fmt.Print(breakLine())
+	for _, pair := range pairs[len(pairs)/2:] {
+		tCase := testCase{pair, port}
+		// put the test case on the crossrunnerTasks channel
+		crossrunnerTasks <- &tCase
+		port++
+	}
 	wg.Wait()
 	close(crossrunnerTasks)
 
