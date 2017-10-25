@@ -143,8 +143,9 @@ func Run(testDefinitions, outDir *string, getCommand func(config Config, port in
 		// put the test case on the crossrunnerTasks channel
 		crossrunnerTasks <- &tCase
 		port++
+		wg.Wait()
 	}
-	wg.Wait()
+
 	close(crossrunnerTasks)
 
 	// Print out console results
