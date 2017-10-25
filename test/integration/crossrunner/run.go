@@ -19,9 +19,8 @@ import (
 	"net/http"
 	"time"
 
-	"os/exec"
-
 	log "github.com/Sirupsen/logrus"
+	"os/exec"
 )
 
 // RunConfig runs a client against a server.  Client/Server logs are created and
@@ -106,7 +105,6 @@ func RunConfig(pair *Pair, port int, getCommand func(config Config, port int) (c
 	}
 
 	// start client
-	time.Sleep(1 * time.Second)
 	done := make(chan error, 1)
 	log.Debug(clientCmd)
 	cStartTime := time.Now()
