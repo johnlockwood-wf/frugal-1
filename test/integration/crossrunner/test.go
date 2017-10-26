@@ -118,7 +118,7 @@ func Run(testDefinitions, outDir *string, getCommand func(config Config, port in
 					failLog.mu.Unlock()
 				}
 				// Print configuration results to console
-				PrintPairResult(task.pair)
+				PrintPairResult(task.pair, task.port)
 				// Increment the count of tests run
 				atomic.AddUint64(&testsRun, 1)
 				wg.Done()

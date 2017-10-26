@@ -130,7 +130,7 @@ func PrintConsoleHeader() {
 }
 
 // PrintPairResult prints a formatted pair result to the console.
-func PrintPairResult(pair *Pair) {
+func PrintPairResult(pair *Pair, port int) {
 	var result string
 	if pair.ReturnCode == 0 {
 		result = "success"
@@ -141,13 +141,13 @@ func PrintPairResult(pair *Pair) {
 		result = "\x1b[31;1mFAILURE\x1b[37;1m"
 	}
 
-	fmt.Printf("%-35s%-15s%-25s%-20s\n",
+	fmt.Printf("%-35s%-15s%-25s%-20s%-10d\n",
 		fmt.Sprintf("%s-%s",
 			pair.Client.Name,
 			pair.Server.Name),
 		pair.Client.Protocol,
 		pair.Client.Transport,
-		result)
+		result, port)
 }
 
 // PrintConsoleFooter writes the metadata associated with the test suite to the console.
