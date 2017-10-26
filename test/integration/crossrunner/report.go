@@ -141,7 +141,7 @@ func PrintPairResult(pair *Pair, port int) {
 		result = "\x1b[31;1mFAILURE\x1b[37;1m"
 	}
 
-	fmt.Printf("%-35s%-15s%-25s%-20s%-10d\n",
+	fmt.Printf("%-35s%-15s%-25s%-20s %-10d\n",
 		fmt.Sprintf("%s-%s",
 			pair.Client.Name,
 			pair.Server.Name),

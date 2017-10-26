@@ -16,11 +16,13 @@ package crossrunner
 import (
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"os/exec"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 // RunConfig runs a client against a server.  Client/Server logs are created and
@@ -60,6 +62,18 @@ func RunConfig(pair *Pair, port int, getCommand func(config Config, port int) (c
 	}
 	// Defer stopping the server to ensure the process is killed on exit
 	defer func() {
+		if pair.Server.Transport == "http" {
+			address := fmt.Sprintf(":%d", port)
+			conn, err := net.Dial("tcp", fmt.Sprintf(":%d", port))
+			if err != nil {
+				log.Info("Failed to connect to " + pair.Server.Name + " server. " + address)
+			} else {
+				log.Info("Connect success " + pair.Server.Name + " server. " + address)
+				if err = conn.Close(); err != nil {
+					log.Info("Failed to close connection to " + pair.Server.Name + " server. " + address)
+				}
+			}
+		}
 		if err = server.Process.Kill(); err != nil {
 			reportCrossrunnerFailure(pair, err)
 			log.Info("Failed to kill " + pair.Server.Name + " server.")
