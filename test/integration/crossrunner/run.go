@@ -17,8 +17,10 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
 	"time"
 
 	"os/exec"
@@ -78,11 +80,24 @@ func RunConfig(pair *Pair, port int, getCommand func(config Config, port int) (c
 				if err != nil {
 					log.Info("Failed to read response")
 				} else {
-					log.Infof("status %s for %s at %s", status, pair.Server.Name, address)
+					log.Infof("status %s for %s at %s\n", status, pair.Server.Name, address)
 				}
 				log.Info("Connect success " + pair.Server.Name + " server. " + address)
 				if err = conn.Close(); err != nil {
 					log.Info("Failed to close connection to " + pair.Server.Name + " server. " + address)
+				}
+			}
+			resp, err := http.PostForm(fmt.Sprintf("http://localhost:%d", port),
+				url.Values{"key": {"Value"}, "id": {"123"}})
+			if err != nil {
+				log.Infof("Faild to post to %s at %s with err: %s\n", pair.Server.Name, address, err)
+			} else {
+				defer resp.Body.Close()
+				body, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					log.Infof("Faild to get body of %s at %s", pair.Server.Name, address)
+				} else {
+					log.Infof("body: %s\n", body)
 				}
 			}
 		}
