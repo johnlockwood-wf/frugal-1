@@ -14,6 +14,7 @@
 package crossrunner
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"net"
@@ -55,6 +56,10 @@ func RunConfig(pair *Pair, port int, getCommand func(config Config, port int) (c
 
 	// start the server
 	sStartTime := time.Now()
+	address := fmt.Sprintf(":%d", port)
+	if pair.Server.Name == "py:asyncio" && pair.Server.Transport == "http" {
+		log.Info("Case! " + pair.Server.Name + " server. " + address)
+	}
 	if err = server.Start(); err != nil {
 		log.Debugf("Failed to start %s server", pair.Server.Name)
 		reportCrossrunnerFailure(pair, err)
@@ -68,6 +73,13 @@ func RunConfig(pair *Pair, port int, getCommand func(config Config, port int) (c
 			if err != nil {
 				log.Info("Failed to connect to " + pair.Server.Name + " server. " + address)
 			} else {
+				fmt.Fprintf(conn, "GET / HTTP/1.0\r\n\r\n")
+				status, err := bufio.NewReader(conn).ReadString('\n')
+				if err != nil {
+					log.Info("Failed to read response")
+				} else {
+					log.Infof("status %s", status)
+				}
 				log.Info("Connect success " + pair.Server.Name + " server. " + address)
 				if err = conn.Close(); err != nil {
 					log.Info("Failed to close connection to " + pair.Server.Name + " server. " + address)
