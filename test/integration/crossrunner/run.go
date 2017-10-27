@@ -78,7 +78,7 @@ func RunConfig(pair *Pair, port int, getCommand func(config Config, port int) (c
 				if err != nil {
 					log.Info("Failed to read response")
 				} else {
-					log.Infof("status %s", status)
+					log.Infof("status %s for %s at %s", status, pair.Server.Name, address)
 				}
 				log.Info("Connect success " + pair.Server.Name + " server. " + address)
 				if err = conn.Close(); err != nil {
