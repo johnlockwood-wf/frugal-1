@@ -14,6 +14,7 @@
 package crossrunner
 
 import (
+	"encoding/csv"
 	"fmt"
 	"os"
 	"runtime"
@@ -43,6 +44,13 @@ type failures struct {
 	mu     sync.Mutex
 }
 
+func resultString(returnCode int) string {
+	if returnCode == 0 {
+		return "PASS"
+	}
+	return "FAIL"
+}
+
 func Run(testDefinitions, outDir *string, getCommand func(config Config, port int) (cmd *exec.Cmd, formatted string)) error {
 	startTime := time.Now()
 
@@ -56,6 +64,8 @@ func Run(testDefinitions, outDir *string, getCommand func(config Config, port in
 		log.Info("Error in parsing json test definitions")
 		panic(err)
 	}
+
+	reportChan := make(chan []string, len(pairs))
 
 	crossrunnerTasks := make(chan *testCase)
 
@@ -91,7 +101,7 @@ func Run(testDefinitions, outDir *string, getCommand func(config Config, port in
 			for task := range crossrunnerTasks {
 				wg.Add(1)
 				// Run each configuration
-				RunConfig(task.pair, task.port, getCommand)
+				clientDuration, serverDuration := RunConfig(task.pair, task.port, getCommand)
 				errorLog := "\n"
 				// Check return code
 				if task.pair.ReturnCode != 0 {
@@ -119,6 +129,22 @@ func Run(testDefinitions, outDir *string, getCommand func(config Config, port in
 				}
 				// Print configuration results to console
 				PrintPairResult(task.pair, task.port)
+				reportChan <- []string{
+					task.pair.Server.Name,
+					fmt.Sprintf("%s", task.pair.Server.Timeout),
+					task.pair.Server.Transport,
+					task.pair.Server.Protocol,
+					fmt.Sprintf("%s", serverDuration),
+					task.pair.Client.Name,
+					fmt.Sprintf("%s", task.pair.Client.Timeout),
+					task.pair.Client.Transport,
+					task.pair.Client.Protocol,
+					fmt.Sprintf("%s", clientDuration),
+					fmt.Sprintf("%d", task.port),
+					fmt.Sprintf("%d", task.pair.ReturnCode),
+					resultString(task.pair.ReturnCode),
+					fmt.Sprintf("%s", task.pair.Err),
+				}
 				// Increment the count of tests run
 				atomic.AddUint64(&testsRun, 1)
 				wg.Done()
@@ -137,8 +163,46 @@ func Run(testDefinitions, outDir *string, getCommand func(config Config, port in
 	}
 
 	wg.Wait()
+	close(reportChan)
 
 	close(crossrunnerTasks)
+	{
+		f, err := os.Create("/testing/artifacts/cross_test_results.csv")
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+		w := csv.NewWriter(f)
+
+		if err := w.Write([]string{
+			"Server Name",
+			"Server Timeout",
+			"Server Transport",
+			"Server Protocol",
+			"Server Duration",
+			"Client Name",
+			"Client Timeout",
+			"Client Transport",
+			"Client Protocol",
+			"Client Duration",
+			"Port",
+			"Return Code",
+			"Result",
+			"Error",
+		}); err != nil {
+			log.Fatalln("error writing record to csv:", err)
+		}
+
+		for reportLine := range reportChan {
+			if err := w.Write(reportLine); err != nil {
+				log.Fatalln("error writing record to csv:", err)
+			}
+		}
+		w.Flush()
+		if err := w.Error(); err != nil {
+			log.Fatal(err)
+		}
+	}
 
 	// Print out console results
 	runningTime := time.Since(startTime)

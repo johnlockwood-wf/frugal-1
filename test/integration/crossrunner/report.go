@@ -131,17 +131,23 @@ func PrintConsoleHeader() {
 	fmt.Print(breakLine())
 }
 
-// PrintPairResult prints a formatted pair result to the console.
-func PrintPairResult(pair *Pair, port int) {
+// ResultString returns a formatted result
+func ResultString(returnCode int) string {
 	var result string
-	if pair.ReturnCode == 0 {
+	if returnCode == 0 {
 		result = "success"
-	} else if pair.ReturnCode == CrossrunnerFailure {
+	} else if returnCode == CrossrunnerFailure {
 		// Colorize failures red - this probably only works in Linux
 		result = "\x1b[31;1mCROSSRUNNER FAILURE\x1b[37;1m"
 	} else {
 		result = "\x1b[31;1mFAILURE\x1b[37;1m"
 	}
+	return result
+}
+
+// PrintPairResult prints a formatted pair result to the console.
+func PrintPairResult(pair *Pair, port int) {
+	result := ResultString(pair.ReturnCode)
 
 	fmt.Printf("%-48s%-15s%-25s%-20s %-10d\n",
 		fmt.Sprintf("c:%s-s:%s",
