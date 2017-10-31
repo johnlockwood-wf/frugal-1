@@ -14,13 +14,9 @@
 package crossrunner
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"net"
 	"net/http"
-	"net/url"
 	"time"
 
 	"os/exec"
@@ -34,7 +30,7 @@ import (
 func RunConfig(pair *Pair, port int, getCommand func(config Config, port int) (cmd *exec.Cmd, formatted string)) {
 	var err error
 	// Create client/server log files
-	if err = createLogs(pair); err != nil {
+	if err = createLogs(pair, port); err != nil {
 		log.Debugf("Failed to create logs for % client and %s server", pair.Client.Name, pair.Server.Name)
 		reportCrossrunnerFailure(pair, err)
 		return
@@ -45,6 +41,15 @@ func RunConfig(pair *Pair, port int, getCommand func(config Config, port int) (c
 	// Get server and client command structs
 	server, serverCmd := getCommand(pair.Server, port)
 	client, clientCmd := getCommand(pair.Client, port)
+	goHTTPClient := Config{
+		Name:      "GoGoClient",
+		Timeout:   time.Second * 7,
+		Transport: "http",
+		Protocol:  pair.Client.Protocol,
+		Command:   []string{"go/bin/testclientbasic"},
+		Logs:      pair.Client.Logs,
+	}
+	goClient, goClientCmd := getCommand(goHTTPClient, port)
 
 	// write server log header
 	log.Debug(serverCmd)
@@ -59,9 +64,6 @@ func RunConfig(pair *Pair, port int, getCommand func(config Config, port int) (c
 	// start the server
 	sStartTime := time.Now()
 	address := fmt.Sprintf(":%d", port)
-	if pair.Server.Name == "py:asyncio" && pair.Server.Transport == "http" {
-		log.Info("Case! " + pair.Server.Name + " server. " + address)
-	}
 	if err = server.Start(); err != nil {
 		log.Debugf("Failed to start %s server", pair.Server.Name)
 		reportCrossrunnerFailure(pair, err)
@@ -69,38 +71,6 @@ func RunConfig(pair *Pair, port int, getCommand func(config Config, port int) (c
 	}
 	// Defer stopping the server to ensure the process is killed on exit
 	defer func() {
-		if pair.Server.Transport == "http" {
-			address := fmt.Sprintf(":%d", port)
-			conn, err := net.Dial("tcp", fmt.Sprintf(":%d", port))
-			if err != nil {
-				log.Info("Failed to connect to " + pair.Server.Name + " server. " + address)
-			} else {
-				fmt.Fprintf(conn, "GET / HTTP/1.0\r\n\r\n")
-				status, err := bufio.NewReader(conn).ReadString('\n')
-				if err != nil {
-					log.Info("Failed to read response")
-				} else {
-					log.Infof("status %s for %s at %s\n", status, pair.Server.Name, address)
-				}
-				log.Info("Connect success " + pair.Server.Name + " server. " + address)
-				if err = conn.Close(); err != nil {
-					log.Info("Failed to close connection to " + pair.Server.Name + " server. " + address)
-				}
-			}
-			resp, err := http.PostForm(fmt.Sprintf("http://localhost:%d", port),
-				url.Values{"key": {"Value"}, "id": {"123"}})
-			if err != nil {
-				log.Infof("Faild to post to %s at %s with err: %s\n", pair.Server.Name, address, err)
-			} else {
-				defer resp.Body.Close()
-				body, err := ioutil.ReadAll(resp.Body)
-				if err != nil {
-					log.Infof("Faild to get body of %s at %s", pair.Server.Name, address)
-				} else {
-					log.Infof("body: %s\n", body)
-				}
-			}
-		}
 		if err = server.Process.Kill(); err != nil {
 			reportCrossrunnerFailure(pair, err)
 			log.Info("Failed to kill " + pair.Server.Name + " server.")
@@ -145,10 +115,52 @@ func RunConfig(pair *Pair, port int, getCommand func(config Config, port int) (c
 		return
 	}
 
+	cStartTime := time.Now()
+
+	// if http, start basic go client
+	if pair.Client.Transport == "http" && pair.Client.Protocol == "json" {
+
+		done := make(chan error, 1)
+		log.Infof("Go sidekick: %s\n", goClientCmd)
+
+		if err = goClient.Start(); err != nil {
+			log.Infof("GO Failed to start %s client. port: %s", goHTTPClient.Name, address)
+			log.Errorf("Go Sidekick start: %s port: %s", err, address)
+		}
+
+		go func() {
+			done <- goClient.Wait()
+		}()
+
+		select {
+		case <-time.After(7 * time.Second):
+			if err = writeClientTimeout(pair, goHTTPClient.Name); err != nil {
+				log.Debugf("GO Failed to write timeout error to %s. port: %s", pair.Client.Logs.Name(), address)
+				log.Errorf("Go Sidekick timeout: %s. port: %s", err, address)
+				return
+			}
+
+			if err = goClient.Process.Kill(); err != nil {
+				log.Infof("GO Error killing %s. port: %s", goHTTPClient.Name, address)
+				log.Errorf("Go Sidekick kill: %s. port: %s", err, address)
+				return
+			}
+			pair.ReturnCode = TestFailure
+			pair.Err = fmt.Errorf("GO sidekick Client has not completed within the specified timeout. port: %s", address)
+			break
+		case err := <-done:
+			if err != nil {
+				log.Debugf("GO Error in %s client. port: %s", goHTTPClient.Name, address)
+				log.Errorf("Go Sidekick done: %s. port: %s", err, address)
+			} else {
+				log.Infof("Go Sidekick success done port: %s", address)
+			}
+		}
+	}
+
 	// start client
 	done := make(chan error, 1)
 	log.Debug(clientCmd)
-	cStartTime := time.Now()
 
 	if err = client.Start(); err != nil {
 		log.Debugf("Failed to start %s client", pair.Client.Name)

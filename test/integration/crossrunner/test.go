@@ -127,9 +127,9 @@ func Run(testDefinitions, outDir *string, getCommand func(config Config, port in
 	}
 
 	// TODO: This could run into issues if run outside of Skynet/Skynet-cli
-	port = 9100
+	port = 9000
 	// Add each configuration to the crossrunnerTasks channel
-	for _, pair := range pairs[:len(pairs)/2] {
+	for _, pair := range pairs {
 		tCase := testCase{pair, port}
 		// put the test case on the crossrunnerTasks channel
 		crossrunnerTasks <- &tCase
@@ -137,14 +137,6 @@ func Run(testDefinitions, outDir *string, getCommand func(config Config, port in
 	}
 
 	wg.Wait()
-	fmt.Print(breakLine())
-	for _, pair := range pairs[len(pairs)/2:] {
-		tCase := testCase{pair, port}
-		// put the test case on the crossrunnerTasks channel
-		crossrunnerTasks <- &tCase
-		port++
-		wg.Wait()
-	}
 
 	close(crossrunnerTasks)
 

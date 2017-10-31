@@ -22,8 +22,9 @@ import (
 
 // createLogs creates client and server log files with the following format:
 // log/clientName-serverName_transport_protocol_role.log.
-func createLogs(pair *Pair) (err error) {
-	pair.Client.Logs, err = os.Create(fmt.Sprintf("log/%s-%s_%s_%s_%s.log",
+func createLogs(pair *Pair, port int) (err error) {
+	pair.Client.Logs, err = os.Create(fmt.Sprintf("log/p%d-c\"%s\"-s\"%s\"_%s_%s_%s.log",
+		port,
 		pair.Client.Name,
 		pair.Server.Name,
 		pair.Client.Protocol,
@@ -33,7 +34,8 @@ func createLogs(pair *Pair) (err error) {
 		return err
 	}
 
-	pair.Server.Logs, err = os.Create(fmt.Sprintf("log/%s-%s_%s_%s_%s.log",
+	pair.Server.Logs, err = os.Create(fmt.Sprintf("log/p%d-c\"%s\"-s\"%s\"_%s_%s_%s.log",
+		port,
 		pair.Client.Name,
 		pair.Server.Name,
 		pair.Server.Protocol,
@@ -141,8 +143,8 @@ func PrintPairResult(pair *Pair, port int) {
 		result = "\x1b[31;1mFAILURE\x1b[37;1m"
 	}
 
-	fmt.Printf("%-35s%-15s%-25s%-20s %-10d\n",
-		fmt.Sprintf("%s-%s",
+	fmt.Printf("%-48s%-15s%-25s%-20s %-10d\n",
+		fmt.Sprintf("c:%s-s:%s",
 			pair.Client.Name,
 			pair.Server.Name),
 		pair.Client.Protocol,
