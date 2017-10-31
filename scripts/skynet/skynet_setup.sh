@@ -22,5 +22,5 @@ fi
 # Start gnatsd
 frugal --version
 gnatsd --version
-gnatsd -D &
+gnatsd &
 
