@@ -1,9 +1,9 @@
 {
 	"ImportPath": "github.com/Workiva/frugal/lib/go",
-	"GoVersion": "go1.8",
-	"GodepVersion": "v75",
+	"GoVersion": "go1.9",
+	"GodepVersion": "v79",
 	"Packages": [
-		"./..."
+		"."
 	],
 	"Deps": [
 		{
@@ -50,6 +50,11 @@
 			"Rev": "6b6bf392d34d01f57cc563ae123f00c13778bd57"
 		},
 		{
+			"ImportPath": "github.com/nats-io/go-nats/util",
+			"Comment": "v1.2.2-6-g6b6bf39",
+			"Rev": "6b6bf392d34d01f57cc563ae123f00c13778bd57"
+		},
+		{
 			"ImportPath": "github.com/nats-io/nuid",
 			"Comment": "v1.0.0",
 			"Rev": "289cccf02c178dc782430d534e3c1f5b72af807f"
@@ -81,11 +86,6 @@
 		{
 			"ImportPath": "golang.org/x/sys/unix",
 			"Rev": "f64b50fbea64174967a8882830d621a18ee1548e"
-		},
-		{
-			"ImportPath": "github.com/nats-io/go-nats/util",
-			"Comment": "v1.2.2-6-g6b6bf39",
-			"Rev": "6b6bf392d34d01f57cc563ae123f00c13778bd57"
 		}
 	]
 }
