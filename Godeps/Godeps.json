@@ -16,11 +16,6 @@
 			"Rev": "d26492970760ca5d33129d2d799e34be5c4782eb"
 		},
 		{
-			"ImportPath": "github.com/Workiva/wuri-sdk",
-			"Comment": "0.2.0-25-g10d0cd8",
-			"Rev": "10d0cd8973b740463e82c11f37cfe0d988348b1c"
-		},
-		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
 			"Comment": "v1.1.0",
 			"Rev": "346938d642f2ec3594ed81d874461961cd0faa76"
