@@ -1,15 +1,1 @@
-{
-	"comment": "",
-	"ignore": "",
-	"package": [
-		{
-			"checksumSHA1": "ipNnCg6UIMQNRA3BbB3UZz3SGdY=",
-			"path": "github.com/Workiva/wuri-sdk",
-			"revision": "6085d06a95e0a714cc7183b291291a076adc591b",
-			"revisionTime": "2017-10-30T18:54:49Z",
-			"version": "0.3.1",
-			"versionExact": "0.3.1"
-		}
-	],
-	"rootPath": "github.com/Workiva/frugal"
-}
+{}
