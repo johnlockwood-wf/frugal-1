@@ -1,0 +1,42 @@
+project: wuri-sdk
+language: multiple-languages
+runner_image: drydock-prod.workiva.net/workiva/smithy-runner-generator:174309 # 65.0.0 (Python 2.7/3.6, Java 8, Go 1.8.1, Dart 1.24.0)
+
+env:
+  - IS_SMITHY=1
+  - WORKSPACE=/smithy-builder/builds/Workiva/wuri-sdk/workspace
+  - GOPATH=$WORKSPACE/gopath
+  - VENV=$WORKSPACE/venvs/wuri-sdk-venv
+  - CODECOV_TOKEN='bQ4MgjJ0G2Y73v8JNX6L7yMK9679nbYB'
+
+before_script:
+  - scripts/smithy/gopath.sh
+  - scripts/py/deps.sh
+
+script:
+  - scripts/go/test.sh
+  - scripts/dart/test.sh
+  - scripts/py/test.sh
+  - scripts/java/test.sh
+  - scripts/codecov/report.sh
+
+test_reports:
+  - py/unit.xml
+  - go_unit_tests.xml
+  - /smithy-builder/builds/Workiva/wuri-sdk/workspace/java/target/surefire-reports/*.xml
+
+after_script:
+  - scripts/dart/package.sh
+  - scripts/java/package.sh
+  - scripts/py/package.sh
+  - scripts/docs/package.sh
+
+documentation: ./wuri-sdk-docs.tar.gz
+
+artifacts:
+  artifactory:
+    - wuri-sdk-*.*.jar
+  pub:
+    - ./wuri-sdk-dart.tar.gz
+  pypi:
+    - ./py/dist/wuri_sdk-*.tar.gz
